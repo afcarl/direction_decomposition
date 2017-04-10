@@ -80,7 +80,6 @@ def low_rank(sparse_list, rank_n, num_iter = 10000, verbosity = 1, outfile = '')
 
 
 
-
 # states, states_dict = initialize_states(args.data_path)
 
 # print '<Main> Building value matrix'

@@ -77,7 +77,8 @@ def build_goal_observations(data_path, worlds_list, states_dict, V = None, goal_
 
     goal_obs = np.zeros( (0, goal_channels, state_size, state_size) )
     instruct_obs = []
-    if V != None:
+    ## check if goal embedding matrix V is provided
+    if type(V) is np.ndarray:
         targets = np.zeros( (0, V.shape[1]) )
     else:
         targets = None
@@ -102,7 +103,7 @@ def build_goal_observations(data_path, worlds_list, states_dict, V = None, goal_
             instruct_obs.append( instruct[ind] )
             values = np.vstack( (values, val_map) )
 
-            if V != None:
+            if type(V) is np.ndarray:
                 ## states_dict maps goal positions to column of value matrix
                 goal_col = states_dict[goal]
                 ## V is num_goals x rank
@@ -135,6 +136,19 @@ def build_test_set(data_path, worlds_list, states, states_dict):
         test_set[world_num] = (state_obs, goal_obs, instruct_obs, values)
 
     return test_set
+
+'''
+test set is returned by build_test_set
+index_fn is a function that replaces instructions with indices
+index_mapping is a dictionary from words --> indices
+'''
+def test_set_indices(test_set, index_fn, index_mapping):
+    new_test = {}
+    for key, (state_obs, goal_obs, instruct_obs, values) in test_set.iteritems():
+        instruct_inds = index_fn(instruct_obs, index_mapping)
+        # print len(instruct_obs), instruct_inds.shape
+        new_test[key] = (state_obs, goal_obs, instruct_obs, instruct_inds, values)
+    return new_test
 
 
 

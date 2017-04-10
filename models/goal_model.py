@@ -1,9 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-
-from text_model import *
-from object_model import *
 
 class Psi(nn.Module):
 
@@ -36,6 +32,9 @@ class Psi(nn.Module):
 
 
 if __name__ == '__main__':
+    from text_model import *
+    from object_model import *
+
     batch = 2
     seq = 10
 

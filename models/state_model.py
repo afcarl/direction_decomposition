@@ -1,21 +1,8 @@
 import sys, math
 import numpy as np
 from tqdm import tqdm, trange
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import torch, torch.nn as nn, torch.nn.functional as F
 import torch.optim as optim
-from torchvision import datasets, transforms
-from torch.autograd import Variable
-
-# if torch.cuda.is_available():
-#     print 'Using GPU'
-#     CUDA = True
-# else:
-#     print 'Using CPU'
-#     CUDA = False
-
-torch.manual_seed(0)
 
 '''
 State observations are two-channel images
