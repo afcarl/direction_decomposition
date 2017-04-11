@@ -1,7 +1,8 @@
 #!/om/user/janner/anaconda2/envs/pytorch/bin/python
 
 import sys, os, argparse, numpy as np, torch
-import decomposition, pipeline, models
+sys.path.append('/om/user/janner/mit/urop/direction_decomposition')
+import decomposition, pipeline, models, sanity_check
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_path', type=str, default='data/train_reorg/')
@@ -13,17 +14,19 @@ parser.add_argument('--rank', type=int, default=10)
 
 parser.add_argument('--state_embed', type=int, default=3)
 parser.add_argument('--obj_embed', type=int, default=3)
-parser.add_argument('--goal_hid', type=int, default=10)
+parser.add_argument('--goal_hid', type=int, default=15)
 
-parser.add_argument('--lstm_inp', type=int, default=10)
-parser.add_argument('--lstm_hid', type=int, default=10)
-parser.add_argument('--lstm_layers', type=int, default=3)
-parser.add_argument('--lstm_out', type=int, default=10)
+parser.add_argument('--lstm_inp', type=int, default=15)
+parser.add_argument('--lstm_hid', type=int, default=15)
+parser.add_argument('--lstm_layers', type=int, default=1)
+parser.add_argument('--lstm_out', type=int, default=15)
 
 parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--lr', type=int, default=0.001)
-parser.add_argument('--iters', type=int, default=1)
-parser.add_argument('--optspace_iters', type=int, default=1)
+parser.add_argument('--phi_iters', type=int, default=1)
+parser.add_argument('--psi_iters', type=int, default=1)
+parser.add_argument('--optspace_iters', type=int, default=10)
+parser.add_argument('--sanity_check', type=int, default=0)
 args = parser.parse_args()
 
 print '\n', args
@@ -41,9 +44,18 @@ nonzero = np.nonzero(value_mat)
 print '\n<Main> Low-rank factorization'; sys.stdout.flush()
 value_sparse = decomposition.sparsify_values(value_mat)
 cols = max([j+1 for (i,j,_) in value_sparse])
-assert cols == 400, 'Did not observe goal (19,19)'
+print 'cols: ', cols
+assert cols == 100, 'Did not observe goal (9,9)'
 U, V, recon = decomposition.low_rank(value_sparse, args.rank, num_iter=args.optspace_iters, verbosity=0, outfile=os.path.join(args.save_path, 'optspace_out.txt'))
 print '<Main> U: ', U.shape, 'V:', V.shape, 'recon:', recon.shape, 'original:', value_mat.shape
+
+###### Visualize embeddings #####
+if args.sanity_check > 0:
+    matrix_vis_path = os.path.join(args.save_path, 'matrix_vis')
+    print '\n<Main> Visualizing', args.sanity_check, 'low-rank embeddings in', matrix_vis_path; sys.stdout.flush()
+    pipeline.mkdir(matrix_vis_path)
+    sanity_check.check_factorization(recon, value_mat, matrix_vis_path, num_vis=args.sanity_check)
+
 
 ######### Observations #########
 
@@ -70,7 +82,7 @@ U = torch.Tensor(U).cuda()
 print '\n<Main> Training phi:', state_obs.size(), '-->', U.size(); sys.stdout.flush()
 phi = models.Phi(state_vocab_size, args.state_embed, state_obs[0].size(), args.rank).cuda()
 phi = pipeline.Trainer(phi, args.lr, args.batch_size)
-# phi.train(state_obs, U, iters=args.iters)
+phi.train(state_obs, U, iters=args.phi_iters)
 
 ######## Instruction model ########
 
@@ -85,11 +97,11 @@ psi = models.Psi(text_model, object_model, args.lstm_out, args.goal_hid, args.ra
 psi = pipeline.Trainer(psi, args.lr, args.batch_size)
 
 print '\n<Main> Training psi: (', goal_obs.size(), 'x', indices_obs.size(), ') -->', targets.size()
-# psi.train( (goal_obs, indices_obs), targets, iters=args.iters)
+psi.train( (goal_obs, indices_obs), targets, iters=args.psi_iters)
 
 
-torch.save( phi.model, os.path.join(args.save_path, 'phi.t7') )
-torch.save( psi.model, os.path.join(args.save_path, 'psi.t7') )
+# torch.save( phi.model, os.path.join(args.save_path, 'phi.t7') )
+# torch.save( psi.model, os.path.join(args.save_path, 'psi.t7') )
 
 ######## Build test set ########
 print 'Building test set from', args.test_path

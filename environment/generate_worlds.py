@@ -17,6 +17,7 @@ parser.add_argument('--lower', type=int, default=0)
 parser.add_argument('--num_worlds', type=int, default=10)
 parser.add_argument('--vis_path', type=str, default='../data/dump_new/')
 parser.add_argument('--save_path', type=str, default='../data/train_new/')
+parser.add_argument('--dim', type=int, default=10)
 args = parser.parse_args()
 
 print args, '\n'
@@ -28,7 +29,12 @@ def mkdir(path):
 mkdir(args.vis_path)
 mkdir(args.save_path)
 
-gen = Generator(library.objects, library.directions)
+if args.dim <= 10:
+    num_steps = 35
+else:
+    num_steps = 50
+
+gen = Generator(library.objects, library.directions, shape=(args.dim, args.dim), num_steps=num_steps )
 
 for outer in range(args.lower, args.lower + args.num_worlds):
     info = gen.new()
@@ -58,7 +64,7 @@ for outer in range(args.lower, args.lower + args.num_worlds):
         value_map = mdp.representValues(values_list)
         values.append(value_map)
 
-        visualize_values(mdp, values_list, policy, '../data/dump/' + str(outer) + '_' + str(inner) + '_values', title=instr)
+        # visualize_values(mdp, values_list, policy, args.vis_path + str(outer) + '_' + str(inner) + '_values', title=instr)
 
     info['values'] = values
     filename = os.path.join( args.save_path, str(outer) + '.p' )

@@ -1,4 +1,4 @@
-import os, math, torch
+import os, math, torch, pipeline
 from torch.autograd import Variable
 import matplotlib; matplotlib.use('Agg')
 from matplotlib import cm
@@ -32,27 +32,29 @@ def evaluate(model, test_set, savepath=None):
                 pred = preds[goal_num].numpy()
                 targ = targets[goal_num].numpy()
                 instr = instruct_words[goal_num]
-                dim = int(math.sqrt(pred.size))
-                vmin = min(pred.min(), targ.min())
-                vmax = max(pred.max(), targ.max())
+
+                pipeline.visualize_value_map(pred, targ, fullpath, title=instr)
+                # dim = int(math.sqrt(pred.size))
+                # vmin = min(pred.min(), targ.min())
+                # vmax = max(pred.max(), targ.max())
                 
-                plt.clf()
-                fig, (ax0,ax1) = plt.subplots(1,2,sharey=True)
-                ax0.pcolor(pred.reshape(dim,dim), vmin=vmin, vmax=vmax, cmap=cm.jet)
-                # ax0.invert_yaxis()
-                ax0.set_title(instr)
-                heatmap = ax1.pcolor(targ.reshape(dim,dim), vmin=vmin, vmax=vmax, cmap=cm.jet)
-                ax1.invert_yaxis()
-                ax1.set_title('target')
+                # plt.clf()
+                # fig, (ax0,ax1) = plt.subplots(1,2,sharey=True)
+                # ax0.pcolor(pred.reshape(dim,dim), vmin=vmin, vmax=vmax, cmap=cm.jet)
+                # # ax0.invert_yaxis()
+                # ax0.set_title(instr)
+                # heatmap = ax1.pcolor(targ.reshape(dim,dim), vmin=vmin, vmax=vmax, cmap=cm.jet)
+                # ax1.invert_yaxis()
+                # ax1.set_title('target')
 
-                fig.subplots_adjust(right=0.8)
-                cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
-                fig.colorbar(heatmap, cax=cbar_ax)
-                print 'saving to: ', fullpath
-                plt.savefig(fullpath, bbox_inches='tight')
-                plt.close(fig)
+                # fig.subplots_adjust(right=0.8)
+                # cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+                # fig.colorbar(heatmap, cax=cbar_ax)
+                # print 'saving to: ', fullpath
+                # plt.savefig(fullpath, bbox_inches='tight')
+                # plt.close(fig)
 
-                print pred.shape, targ.shape
+                # print pred.shape, targ.shape
 
 
 

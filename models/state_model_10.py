@@ -20,10 +20,10 @@ class Phi(nn.Module):
         self.reshape.append(embed_dim)
 
         self.embed = nn.Embedding(vocab_size, embed_dim)
-        self.conv1 = nn.Conv2d(embed_dim, 3, kernel_size=5)
-        self.conv2 = nn.Conv2d(3, 6, kernel_size=5)
-        self.conv3 = nn.Conv2d(6,12, kernel_size=5)
-        self.conv4 = nn.Conv2d(12,12, kernel_size=5)
+        self.conv1 = nn.Conv2d(embed_dim, 3, kernel_size=3)
+        self.conv2 = nn.Conv2d(3, 6, kernel_size=3)
+        self.conv3 = nn.Conv2d(6,12, kernel_size=3)
+        # self.conv4 = nn.Conv2d(12,12, kernel_size=5)
         self.fc1 = nn.Linear(192, out_dim)
 
     def forward(self, x):
@@ -35,14 +35,15 @@ class Phi(nn.Module):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
-        x = F.relu(self.conv4(x))
+        # x = F.relu(self.conv4(x))
         x = x.view(-1, 192)
         x = self.fc1(x)
         return x
 
 
 if __name__ == '__main__':
-    inp = torch.LongTensor(2,20,20).zero_()
+    from torch.autograd import Variable
+    inp = torch.LongTensor(2,10,10).zero_()
     vocab_size = 10
     emb_dim = 3
     rank = 7

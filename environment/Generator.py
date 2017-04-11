@@ -6,15 +6,16 @@ import library
 
 class Generator:
 
-    def __init__(self, objects, directions, shape = (20,15), goal_value = 3):
+    def __init__(self, objects, directions, shape = (20,20), goal_value = 3, num_steps = 50):
         self.objects = objects
         self.directions = directions
         self.shape = shape
         self.goal_value = goal_value
+        self.num_steps = num_steps
 
     def new(self):
         directions = {}
-        world = self.__puddles()
+        world = self.__puddles(self.num_steps)
         # print world
 
         states = [(i,j) for i in range(world.shape[0]) \
@@ -54,7 +55,7 @@ class Generator:
         }
         return info
 
-    def __puddles(self, iters=50, max_width=3, max_steps=10):
+    def __puddles(self, iters, max_width=3, max_steps=10):
         (M,N) = self.shape
         turns = ['up', 'down', 'left', 'right']
         world = np.zeros( self.shape )
