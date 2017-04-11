@@ -4,7 +4,7 @@ from matplotlib import cm
 from matplotlib import pyplot as plt
 
 def visualize_value_map(pred, targ, save_path, title='prediction'):
-    print 'in vis: ', pred.shape, targ.shape
+    # print 'in vis: ', pred.shape, targ.shape
     dim = int(math.sqrt(pred.size))
     vmin = min(pred.min(), targ.min())
     vmax = max(pred.max(), targ.max())

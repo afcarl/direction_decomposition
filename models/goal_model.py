@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class Psi(nn.Module):
 
@@ -9,7 +10,8 @@ class Psi(nn.Module):
         self.text_model = text_model
         self.object_model = object_model
         self.fc1 = nn.Linear(concat_dim * 2, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, out_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = nn.Linear(hidden_dim, out_dim)
 
 
     def forward(self, inp):
@@ -25,9 +27,10 @@ class Psi(nn.Module):
         # print 'text inp: ', text.data.size()
         # print 'hidden: ', hidden.data.size()
         text_out = self.text_model.forward(text, hidden)
-        concat = torch.cat( (obj_out, text_out), 1)
-        output = self.fc1(concat)
-        output = self.fc2(output)
+        concat = F.relu( torch.cat((obj_out, text_out), 1) )
+        output = F.relu(self.fc1(concat))
+        output = F.relu(self.fc2(output))
+        output = self.fc3(output)
         return output
 
 

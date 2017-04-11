@@ -1,9 +1,9 @@
 import subprocess
 
-save_path = '../data/train_10/'
+save_path = '../data/test_10/'
 vis_path = '../data/vis_10/'
-start = 700
-end = 2000
+start = 0
+end = 1000
 step = 10
 dim = 10
 

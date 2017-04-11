@@ -3,6 +3,7 @@ from torch.autograd import Variable
 import matplotlib; matplotlib.use('Agg')
 from matplotlib import cm
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 '''
 test set is dict from
@@ -10,7 +11,7 @@ world number --> (state_obs, goal_obs, instruct_inds, values)
 '''
 
 def evaluate(model, test_set, savepath=None):
-    for key, (state_obs, goal_obs, instruct_words, instruct_inds, targets) in test_set.iteritems():
+    for key, (state_obs, goal_obs, instruct_words, instruct_inds, targets) in tqdm(test_set.iteritems()):
         # print torch.Tensor(state_obs).long().cuda()
         state = Variable( torch.Tensor(state_obs).long().cuda() )
         objects = Variable( torch.Tensor(goal_obs).long().cuda() )
@@ -22,8 +23,8 @@ def evaluate(model, test_set, savepath=None):
         # num_goals = objects.size(0)
         # for ind in range(num_goals):
             # val = model.forward( state, objects[ind], instructions[ind])
-        print 'preds:   ', preds.size()
-        print 'targets: ', targets.size()
+        # print 'preds:   ', preds.size()
+        # print 'targets: ', targets.size()
         if savepath:
             num_goals = preds.size(0)
             for goal_num in range(num_goals):

@@ -1,13 +1,14 @@
 train_path=data/train_10/
-test_path=data/train_10/
+test_path=data/test_10/
 optspace_iters=2000
-phi_iters=1000
-psi_iters=1000
-rank=10
-path=logs/mapdim10_
+phi_iters=2000
+psi_iters=5000
+rank=20
+path=logs/test_relu_mapdim10_
 sanity_check=2
 
-for worlds in 20 40 60 80 100 150 200;
+
+for worlds in 20 40 60 80 100;
 do
     fullpath=${path}rank${rank}_worlds${worlds}_opt${optspace_iters}_phi${phi_iters}_psi${psi_iters}
     echo ${worlds}: ${fullpath}

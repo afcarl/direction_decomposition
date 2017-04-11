@@ -1,6 +1,6 @@
 #!/om/user/janner/anaconda2/envs/pytorch/bin/python
 
-import sys, os, argparse, numpy as np, torch
+import sys, os, argparse, pickle, numpy as np, torch
 sys.path.append('/om/user/janner/mit/urop/direction_decomposition')
 import decomposition, pipeline, models, sanity_check
 
@@ -9,20 +9,20 @@ parser.add_argument('--data_path', type=str, default='data/train_reorg/')
 parser.add_argument('--test_path', type=str, default='data/train_reorg/')
 parser.add_argument('--save_path', type=str, default='logs/trial0/')
 parser.add_argument('--num_worlds', type=int, default=10)
-parser.add_argument('--num_test', type=int, default=10)
+parser.add_argument('--num_test', type=int, default=25)
 parser.add_argument('--rank', type=int, default=10)
 
 parser.add_argument('--state_embed', type=int, default=3)
 parser.add_argument('--obj_embed', type=int, default=3)
-parser.add_argument('--goal_hid', type=int, default=15)
+parser.add_argument('--goal_hid', type=int, default=30)
 
-parser.add_argument('--lstm_inp', type=int, default=15)
-parser.add_argument('--lstm_hid', type=int, default=15)
+parser.add_argument('--lstm_inp', type=int, default=30)
+parser.add_argument('--lstm_hid', type=int, default=30)
 parser.add_argument('--lstm_layers', type=int, default=1)
-parser.add_argument('--lstm_out', type=int, default=15)
+parser.add_argument('--lstm_out', type=int, default=30)
 
 parser.add_argument('--batch_size', type=int, default=32)
-parser.add_argument('--lr', type=int, default=0.001)
+parser.add_argument('--lr', type=int, default=0.01)
 parser.add_argument('--phi_iters', type=int, default=1)
 parser.add_argument('--psi_iters', type=int, default=1)
 parser.add_argument('--optspace_iters', type=int, default=10)
@@ -96,43 +96,34 @@ object_model = models.ObjectModel(obj_vocab_size, args.obj_embed, goal_obs[0].si
 psi = models.Psi(text_model, object_model, args.lstm_out, args.goal_hid, args.rank).cuda()
 psi = pipeline.Trainer(psi, args.lr, args.batch_size)
 
+# print '\n<Main> Saving psi inputs, targets'
+# pickle.dump(goal_obs, open('pickle/goal_obs' + str(args.num_worlds) + '.p', 'w') )
+# pickle.dump(indices_obs, open('pickle/indices_obs' + str(args.num_worlds) + '.p', 'w') )
+# pickle.dump(targets, open('pickle/targets' + str(args.num_worlds) + '.p', 'w') )
+
 print '\n<Main> Training psi: (', goal_obs.size(), 'x', indices_obs.size(), ') -->', targets.size()
 psi.train( (goal_obs, indices_obs), targets, iters=args.psi_iters)
 
-
-# torch.save( phi.model, os.path.join(args.save_path, 'phi.t7') )
-# torch.save( psi.model, os.path.join(args.save_path, 'psi.t7') )
+print '\n<Main> Saving models to', args.save_path
+torch.save( phi.model, os.path.join(args.save_path, 'phi.t7') )
+torch.save( psi.model, os.path.join(args.save_path, 'psi.t7') )
 
 ######## Build test set ########
 print 'Building test set from', args.test_path
 test_set = decomposition.build_test_set(args.test_path, range(args.num_test), states, states_dict)
 test_set = decomposition.test_set_indices(test_set, pipeline.instructions_to_indices, text_vocab)
 
-# print [i.shape for i in test_set[0]]
-
 compositor = models.CompositorModel(phi.model, psi.model)
 print compositor
 vis_path = os.path.join(args.save_path, 'vis')
 pipeline.mkdir(vis_path)
 test_err = pipeline.evaluate(compositor, test_set, vis_path)
+print 'done'
 
 
 
 
-# indices_obs = instructions_to_indices(test_set[i][2], text_vocab)
-# indices_obs = torch.Tensor(indices_obs).long().cuda()
 
-
-# phi.train()
-# psi.train()
-
-    # def __init__(self, model, criterion, optimizer, batch_size = 32):
-    #     self.model = model
-    #     self.criterion = criterion
-    #     self.optimizer = optimizer
-    #     self.batch_size = batch_size
-
-    # def train(self, inputs, targets, repeats = 1):
 
 
 
